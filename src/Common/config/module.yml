@@ -1,3 +1,8 @@
+parameters:
+    APP_ENV: '%env(APP_ENV)%'
+    PRODUCT_NAME: '%env(PRODUCT_NAME)%'
+    MAILER_EMAIL_FROM: '%env(MAILER_EMAIL_FROM)%'
+
 doctrine_mongodb:
     document_managers:
         default:

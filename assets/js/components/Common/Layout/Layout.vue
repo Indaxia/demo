@@ -9,8 +9,9 @@
       </md-app-toolbar>
 
       <md-app-drawer :md-active.sync="menuVisible" md-permanent="full" :md-swipeable="true">
-        <md-toolbar class="md-transparent" md-elevation="0">
-          <span class="md-title">{{ $root.pageMeta.brand }}</span>
+        <md-toolbar class="md-transparent brand-toolbar" md-elevation="0">
+          <img class="logo" alt="Logo" src="/images/logo/logo_02_64.png">
+          <span class="md-headline brand">{{ $root.pageMeta.brand }}</span>
 
           <div class="md-toolbar-section-end">
             <md-button class="md-icon-button md-dense menu-close-button" aria-label="Close Menu" @click="toggleMenu">
@@ -33,35 +34,83 @@
       </md-app-drawer>
 
       <md-app-content role="main">
-        <router-view></router-view>
+        <router-view v-if="!initializing"></router-view>
+        <div class="loading-message" role="img" v-if="initializing" aria-label="Loading...">
+            <md-icon class="md-size-5x spin-slow">autorenew</md-icon>
+        </div>
       </md-app-content>
     </md-app>
   </div>
 </template>
 
-<script>
-    
+<script>    
     export default {
       data: () => ({
         menuVisible: false
       }),
+      props: {
+        initializing: Boolean
+      },
       methods: {
-        toggleMenu () {
+        toggleMenu() {
           this.menuVisible = !this.menuVisible
+        },
+        closeMenu() {
+          this.menuVisible = false;
         }
+      },
+      mounted() {
+        this.$router.afterEach((to, from) => {
+          this.closeMenu();
+        })
       }
     }
 </script>
 
 <style lang="scss" scoped>
   .md-app {
-    min-height: 350px;
-    border: 1px solid rgba(#000, .12);
+    min-height: 100vh;
   }
 
   @media (min-width: 600px) {
     .menu-open-button, .menu-close-button {
       display: none;
     }
+    .md-app-drawer {
+      max-width: 280px;
+    }
   }
+
+  .loading-message {
+      text-align: center;
+      padding-top: 120px;
+
+      .md-icon.md-theme-default.md-icon-font {
+          color: rgba(127,127,127,0.5);
+      }
+  }
+
+  .md-list {
+    .md-list-item {
+      .md-icon {
+        margin-right: 16px;
+      }
+    }
+  }
+
+  .brand-toolbar {
+    padding-top: 16px;
+    padding-left: 16px;
+
+    .brand {
+      padding-left: 16px;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  
 </style>
