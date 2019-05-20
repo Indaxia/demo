@@ -5,8 +5,12 @@
     </div>
 </template>
 
-<script>    
+<script> 
+
     export default {
+        mounted() {
+            this.$root.$pageMetaSetTitle('Home Page');
+        }
     }
 </script>
 

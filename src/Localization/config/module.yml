@@ -1,0 +1,13 @@
+doctrine_mongodb:
+    document_managers:
+        default:
+            mappings:
+                Localization: 
+                    dir: '%kernel.project_dir%/src/Localization/Document'
+                    prefix: App\Localization\Document
+                    type: 'annotation'
+                    is_bundle: false
+                
+twig:
+    paths:
+        '%kernel.project_dir%/src/Localization/templates': 'Localization'

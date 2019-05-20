@@ -1,12 +1,20 @@
 <template>
-    <Layout></Layout>
+    <div class="app-container">
+        <Layout></Layout>
+    </div>
 </template>
 
 <script>
     import Layout from './Common/Layout/Layout.vue'
+    import InitialDataStore from '../store/Common/InitialDataStore'
     
     export default {
-        components: { Layout }
+        components: { Layout },
+        mounted() {
+            this.$root.$pageMetaSetBrand("Demo App");
+
+            InitialDataStore.load();
+        }
     }
 </script>
 

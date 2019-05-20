@@ -4,11 +4,19 @@ namespace App\Common\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Common\Services\InitialData\Collector;
 
 class InitialController extends AbstractController
 {
+    /** @var \App\Common\Services\InitialData\Collector */
+    private $collector;
+
+    public function __construct(Collector $collector)
+    {
+        $this->collector = $collector;
+    }
+
     /**
      * @Route("/")
      */
@@ -32,14 +40,8 @@ class InitialController extends AbstractController
      * Provides initial data for the frontend
      * @Route("/api/initial")
      */
-    public function initial(Request $request)
+    public function initial()
     {
-        $locale = empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) 
-            ? $request->getLocale() 
-            : strtolower(str_split($_SERVER['HTTP_ACCEPT_LANGUAGE'], 2)[0]);
-            
-        return new JsonResponse([
-            'clientLocale' => $locale
-        ]);
+        return new JsonResponse($this->collector->collect()->getData());
     }
 }

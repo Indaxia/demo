@@ -1,9 +1,13 @@
 <template>
-    <h2>Some page</h2>
+    <h2>Just another page</h2>
 </template>
 
 <script>
-    export default {}
+    export default {
+        mounted() {
+            this.$root.$pageMetaSetTitle('Some Page');
+        }
+    }
 </script>
 
 <style scoped>
