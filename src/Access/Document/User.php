@@ -7,12 +7,13 @@ use App\Common\Document\Traits\HasUpdatedAt;
 use Doctrine\Common\Collections\ArrayCollection;
 use FOS\UserBundle\Model\User as FOSUser;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use App\Access\Model\UserInterface;
 
 /**
  * @ODM\Document(collection="access_users", repositoryClass="App\Access\Repository\UserRepository")
  * @ODM\HasLifecycleCallbacks
  */
-class User extends FOSUser
+class User extends FOSUser implements UserInterface
 {
     use HasCreatedAt, HasUpdatedAt;
 
@@ -83,7 +84,7 @@ class User extends FOSUser
      * @param string $fullName
      * @return User
      */
-    public function setFullName(string $fullName): User
+    public function setFullName(string $fullName): UserInterface
     {
         $this->fullName = $fullName;
 
@@ -100,7 +101,7 @@ class User extends FOSUser
 
     /**
      * @param bool $enabled
-     * @return $this
+     * @return User
      */
     public function setEnabled($enabled)
     {
@@ -124,7 +125,7 @@ class User extends FOSUser
      * @param string $banReason
      * @return User
      */
-    public function setBanReason(string $banReason): User
+    public function setBanReason(string $banReason): UserInterface
     {
         $this->banReason = $banReason;
 
@@ -143,7 +144,7 @@ class User extends FOSUser
      * @param bool $emailConfirmed
      * @return User
      */
-    public function setEmailConfirmed(bool $emailConfirmed): User
+    public function setEmailConfirmed(bool $emailConfirmed): UserInterface
     {
         $this->emailConfirmed = $emailConfirmed;
 
@@ -152,10 +153,10 @@ class User extends FOSUser
 
     /**
      * Determines whether the given user's id equals to current user's id
-     * @param User|null $anotherUser
+     * @param \App\Access\Interface\UserInterface|null $anotherUser
      * @return bool
      */
-    public function is(User $anotherUser = null)
+    public function is(?UserInterface $anotherUser): bool
     {
         return $anotherUser ? $this->getId() === $anotherUser->getId() : false;
     }
@@ -165,7 +166,7 @@ class User extends FOSUser
      * @param array $roles
      * @return bool
      */
-    public function hasAnyRole(array $roles)
+    public function hasAnyRole(array $roles): bool
     {
         return count(array_intersect($roles, $this->getRoles())) > 0;
     }
@@ -175,7 +176,7 @@ class User extends FOSUser
      * @param array $roles
      * @return bool
      */
-    public function hasAllRoles(array $roles)
+    public function hasAllRoles(array $roles): bool
     {
         return array_intersect($roles, $this->getRoles()) == $roles;
     }
@@ -192,7 +193,7 @@ class User extends FOSUser
      * @param \App\Access\Document\UserSettings $settings
      * @return User
      */
-    public function setSettings(UserSettings $settings): User
+    public function setSettings(UserSettings $settings): UserInterface
     {
         $this->settings = $settings;
 
@@ -211,7 +212,7 @@ class User extends FOSUser
      * @param string|null $value ISO country code
      * @return User
      */
-    public function setCountry(?string $value)
+    public function setCountry(?string $value): UserInterface
     {
         $this->country = $value;
 

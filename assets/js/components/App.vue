@@ -27,6 +27,7 @@
         components: { Layout },
         mounted() {
             this.$root.$pageMetaSetBrand("Demo App");
+            this.$root.$data.env = '';
             this.initialize();
         },
         methods: {

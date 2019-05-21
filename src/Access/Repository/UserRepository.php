@@ -2,23 +2,23 @@
 
 namespace App\Access\Repository;
 
-use App\Access\Document\User;
+use App\Access\Model\UserInterface;
 use Doctrine\ODM\MongoDB\LockMode;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use FOS\UserBundle\Util\Canonicalizer;
 use TransformationsBundle\Utilities\DateTimeConverter;
 
 /**
- * @method User find($id, $lockMode = LockMode::NONE, $lockVersion = null)
- * @method User findOneBy(array $criteria)
- * @method User[] findBy(array $criteria, array $sort = null, $limit = null, $skip = null)
- * @method User[] findAll()
+ * @method UserInterface find($id, $lockMode = LockMode::NONE, $lockVersion = null)
+ * @method UserInterface findOneBy(array $criteria)
+ * @method UserInterface[] findBy(array $criteria, array $sort = null, $limit = null, $skip = null)
+ * @method UserInterface[] findAll()
  */
 class UserRepository extends AbstractRepository
 {
     /**
      * @param string $username
-     * @return \App\Access\Document\User|null
+     * @return \App\Access\Security\UserInterface|null
      */
     public function findOneByUsername(string $username)
     {
@@ -28,7 +28,7 @@ class UserRepository extends AbstractRepository
 
     /**
      * @param string $email
-     * @return \App\Access\Document\User|null
+     * @return \App\Access\Security\UserInterface|null
      */
     public function findOneByEmail(string $email)
     {
@@ -39,7 +39,7 @@ class UserRepository extends AbstractRepository
     /**
      * @param string $field
      * @param array $values
-     * @return \App\Access\Document\User[]|\Doctrine\ODM\MongoDB\Cursor
+     * @return \App\Access\Security\UserInterface[]|\Doctrine\ODM\MongoDB\Cursor
      */
     public function findAllIn(string $field, array $values)
     {
@@ -55,7 +55,7 @@ class UserRepository extends AbstractRepository
      * @param bool $reverse
      * @param array $criteria
      * @param bool $getCountInstead
-     * @return \App\Access\Document\User[]|int int for last param if count requested
+     * @return \App\Access\Security\UserInterface[]|int int for last param if count requested
      */
     public function search(
         int $offset,
@@ -123,7 +123,7 @@ class UserRepository extends AbstractRepository
      * @param int $offset
      * @param int $limit
      * @throws \Doctrine\ODM\MongoDB\MongoDBException
-     * @return \Doctrine\ODM\MongoDB\Cursor|\App\Access\Document\User[]
+     * @return \Doctrine\ODM\MongoDB\Cursor|\App\Access\Security\UserInterface[]
      */
     public function getNewUsers(int $offset = 0, int $limit = 20)
     {

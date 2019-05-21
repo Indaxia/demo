@@ -1,5 +1,9 @@
 parameters:
     'app.security.user_class': App\Access\Document\User
+    'app.access.access_control_class': App\Access\Security\AccessControl
+
+services:
+    App\Access\Security\AccessControlInterface: '@%app.access.access_control_class%'
 
 doctrine_mongodb:
     document_managers:
