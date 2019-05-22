@@ -1,9 +1,13 @@
 parameters:
-    'app.security.user_class': App\Access\Document\User
-    'app.access.access_control_class': App\Access\Security\AccessControl
+    'app.access.user_class': 'App\Access\Document\User'
+    'app.access.user_contacts_class': 'App\Access\Document\UserContacts'
+    'app.access.user_settings_class': 'App\Access\Document\UserSettings'
 
 services:
-    App\Access\Security\AccessControlInterface: '@%app.access.access_control_class%'
+    App\Access\Factory\UserIdentityFactoryInterface: '@App\Access\Factory\UserIdentity\UserIdentityEmailFactory'
+    App\Access\Factory\UserAuthenticityFactoryInterface: '@App\Access\Factory\UserAuthenticity\UserAuthenticityPasswordFactory'
+    App\Access\Security\AccessControlInterface: '@App\Access\Security\AccessControl'
+    App\Access\Factory\UserFactoryInterface: '@App\Access\Factory\UserFactory'    
 
 doctrine_mongodb:
     document_managers:

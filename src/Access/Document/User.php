@@ -2,18 +2,22 @@
 
 namespace App\Access\Document;
 
+use App\Access\Model\UserInterface;
+use App\Access\Model\UserIdentityInterface;
+use App\Access\Model\UserAuthenticityInterface;
+use App\Access\Model\UserSettingsInterface;
+use App\Access\Model\UserContactsInterface;
 use App\Common\Document\Traits\HasCreatedAt;
 use App\Common\Document\Traits\HasUpdatedAt;
 use Doctrine\Common\Collections\ArrayCollection;
-use FOS\UserBundle\Model\User as FOSUser;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-use App\Access\Model\UserInterface;
+use App\Access\Model\UserVerificationStateInterface;
 
 /**
  * @ODM\Document(collection="access_users", repositoryClass="App\Access\Repository\UserRepository")
  * @ODM\HasLifecycleCallbacks
  */
-class User extends FOSUser implements UserInterface
+class User implements UserInterface
 {
     use HasCreatedAt, HasUpdatedAt;
 
@@ -24,16 +28,28 @@ class User extends FOSUser implements UserInterface
     protected $id;
 
     /**
-     * @var string
-     * @ODM\Field(type="string")
+     * @var \App\Access\Document\UserIdentity
+     * @ODM\EmbedOne(targetDocument="UserIdentity")
      */
-    protected $fullName;
+    protected $identity;
 
     /**
-     * @var bool
-     * @ODM\Field(type="bool")
+     * @var \App\Access\Document\UserAuthenticity
+     * @ODM\EmbedOne(targetDocument="UserAuthenticity")
      */
-    protected $emailConfirmed;
+    protected $authenticity;
+
+    /**
+     * @var \App\Access\Document\UserVerificationState
+     * @ODM\EmbedOne(targetDocument="UserVerificationState")
+     */
+    protected $verificationState;
+
+    /**
+     * @var \App\Access\Document\UserContacts
+     * @ODM\EmbedOne(targetDocument="UserContacts")
+     */
+    protected $contacts;
 
     /**
      * @var \App\Access\Document\UserSettings
@@ -42,10 +58,10 @@ class User extends FOSUser implements UserInterface
     protected $settings;
 
     /**
-     * @var string ISO country code
-     * @ODM\Field(type="string", nullable=true)
+     * @var \DateTime|null
+     * @ODM\Field(type="date", nullable=true)
      */
-    protected $country;
+    protected $bannedAt;
 
     /**
      * @var string
@@ -54,77 +70,107 @@ class User extends FOSUser implements UserInterface
     protected $banReason;
 
     /**
+     * @var string[]
+     * @ODM\Field(type="collection")
+     */
+    protected $roles;
+
+
+    /**
      * User constructor.
      */
     public function __construct() {
-        parent::__construct();
-
-        $this->addRole('ROLE_USER');
+        $this->identity = new UserIdentity(null);
+        $this->authenticity = new UserAuthenticity(null);
+        $this->verificationState = new UserVerificationState(false);
+        $this->contacts = new UserContacts();
         $this->settings = new UserSettings();
-        $this->emailConfirmed = false;
+        $this->banReason = '';
+        $this->roles = [];
     }
 
-    /**
-     * @return string|null
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
-    public function getFullName(): string
-    {
-        return $this->fullName ?? '';
+	public function getIdentity(): UserIdentityInterface
+	{
+		return $this->identity;
+	}
+
+	public function setIdentity(UserIdentityInterface $value): UserInterface
+	{
+		$this->identity = $value;
+
+		return $this;
+	}
+
+	public function getAuthenticity(): UserAuthenticityInterface
+	{
+		return $this->authenticity; 
+	}
+
+	public function setAuthenticity(UserAuthenticityInterface $value): UserInterface
+	{
+		$this->authenticity = $value;
+
+		return $this;
+	}
+
+	public function getVerificationState(): UserVerificationStateInterface
+	{
+		return $this->verificationState; 
+	}
+
+	public function setVerificationState(UserVerificationStateInterface $value): UserInterface
+	{
+		$this->verificationState = $value;
+
+		return $this;
+	}
+
+	public function getContacts(): UserContactsInterface
+	{
+		return $this->contacts; 
+	}
+
+	public function setContacts(UserContactsInterface $value): UserInterface
+	{
+		$this->contacts = $value;
+
+		return $this;
     }
 
-    /**
-     * @param string $fullName
-     * @return User
-     */
-    public function setFullName(string $fullName): UserInterface
+    public function getSettings(): UserSettingsInterface
     {
-        $this->fullName = $fullName;
+        return $this->settings;
+    }
+
+    public function setSettings(UserSettingsInterface $settings): UserInterface
+    {
+        $this->settings = $settings;
 
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function getEnabled(): bool
-    {
-        return $this->enabled;
-    }
+	public function getBannedAt(): ?\DateTime
+	{
+		return $this->bannedAt; 
+	}
 
-    /**
-     * @param bool $enabled
-     * @return User
-     */
-    public function setEnabled($enabled)
-    {
-        $this->enabled = (bool) $enabled;
-        if($enabled) {
-            $this->banReason = '';
-        }
+	public function setBannedAt(?\DateTime $value): UserInterface
+	{
+		$this->bannedAt = $value;
 
-        return $this;
-    }
+		return $this;
+	}
 
-    /**
-     * @return string
-     */
     public function getBanReason(): string
     {
-        return $this->banReason ?? '';
+        return $this->banReason;
     }
 
-    /**
-     * @param string $banReason
-     * @return User
-     */
     public function setBanReason(string $banReason): UserInterface
     {
         $this->banReason = $banReason;
@@ -132,90 +178,56 @@ class User extends FOSUser implements UserInterface
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function getEmailConfirmed(): bool
-    {
-        return $this->emailConfirmed ?? true;
-    }
-
-    /**
-     * @param bool $emailConfirmed
-     * @return User
-     */
-    public function setEmailConfirmed(bool $emailConfirmed): UserInterface
-    {
-        $this->emailConfirmed = $emailConfirmed;
-
-        return $this;
-    }
-
-    /**
-     * Determines whether the given user's id equals to current user's id
-     * @param \App\Access\Interface\UserInterface|null $anotherUser
-     * @return bool
-     */
     public function is(?UserInterface $anotherUser): bool
     {
         return $anotherUser ? $this->getId() === $anotherUser->getId() : false;
     }
 
-    /**
-     * Determines whether the user has any of the given roles.
-     * @param array $roles
-     * @return bool
-     */
-    public function hasAnyRole(array $roles): bool
+    public function hasAnyRole($roleOrRoles): bool
     {
-        return count(array_intersect($roles, $this->getRoles())) > 0;
+        return is_string($roleOrRoles) ? in_array($roleOrRoles, $this->roles) : count(array_intersect($roleOrRoles, $this->getRoles())) > 0;
     }
 
-    /**
-     * Determines whether the user has all of the given roles.
-     * @param array $roles
-     * @return bool
-     */
     public function hasAllRoles(array $roles): bool
     {
         return array_intersect($roles, $this->getRoles()) == $roles;
     }
 
-    /**
-     * @return \App\Access\Document\UserSettings
-     */
-    public function getSettings(): UserSettings
-    {
-        return $this->settings;
-    }
+    // Symfony UserInterface compatibility
+
+	public function getRoles(): array
+	{
+		return $this->roles; 
+	}
 
     /**
-     * @param \App\Access\Document\UserSettings $settings
-     * @return User
+     * @param string[] $value
+     * @return UserInterface
      */
-    public function setSettings(UserSettings $settings): UserInterface
-    {
-        $this->settings = $settings;
+	public function setRoles(array $value)
+	{
+		$this->roles = $value;
 
-        return $this;
+		return $this;
+	}
+    
+    public function getPassword() 
+    {
+        return $this->getAuthenticity()->getAuthenticator();
     }
 
-    /**
-     * @return string|null ISO country code
-     */
-    public function getCountry(): ?string
+    public function getSalt()
     {
-        return $this->country;
+        return '';
     }
 
-    /**
-     * @param string|null $value ISO country code
-     * @return User
-     */
-    public function setCountry(?string $value): UserInterface
+    public function getUsername()
     {
-        $this->country = $value;
-
-        return $this;
+        return $this->getIdentity()->getIdentifier();
     }
+    
+    public function eraseCredentials()
+    {        
+    }
+
 }

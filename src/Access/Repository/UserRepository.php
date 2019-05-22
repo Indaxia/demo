@@ -2,147 +2,70 @@
 
 namespace App\Access\Repository;
 
-use App\Access\Model\UserInterface;
-use Doctrine\ODM\MongoDB\LockMode;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
-use FOS\UserBundle\Util\Canonicalizer;
-use TransformationsBundle\Utilities\DateTimeConverter;
+use App\Access\Model\UserInterface;
+use App\Access\Model\UserIdentityInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * @method UserInterface find($id, $lockMode = LockMode::NONE, $lockVersion = null)
- * @method UserInterface findOneBy(array $criteria)
- * @method UserInterface[] findBy(array $criteria, array $sort = null, $limit = null, $skip = null)
- * @method UserInterface[] findAll()
- */
-class UserRepository extends AbstractRepository
+class UserRepository
 {
     /**
-     * @param string $username
-     * @return \App\Access\Security\UserInterface|null
+     * @var DocumentManager
      */
-    public function findOneByUsername(string $username)
+    protected $dm;
+    protected $class;
+
+    public function __construct(DocumentManager $dm, ContainerInterface $container)
     {
-        $canonicalizer = new Canonicalizer();
-        return $this->findOneBy(['usernameCanonical' => $canonicalizer->canonicalize($username)]);
+        $this->dm = $dm;
+        $this->class = $container->getParameter('app.access.user_class');
+    }
+
+    public function findByIdentity(UserIdentityInterface $identity): ?UserInterface
+    {
+        return $this->dm->createQueryBuilder($this->class)
+            ->field('identity.identifier')->equals($identity->getIdentifier())
+            ->getQuery()->getSingleResult();
     }
 
     /**
-     * @param string $email
-     * @return \App\Access\Security\UserInterface|null
+     * Saves the user to the database
+     * @param UserInterface $user
+     * @param bool $flushNow Set to false to defer transaction (e.g. for multiple saves)
      */
-    public function findOneByEmail(string $email)
+    public function save(UserInterface $user, bool $flushNow = true)
     {
-        $canonicalizer = new Canonicalizer();
-        return $this->findOneBy(['emailCanonical' => $canonicalizer->canonicalize($email)]);
+        $this->dm->persist($user);
+
+        if($flushNow) {
+            $this->dm->flush();
+        }
     }
 
     /**
-     * @param string $field
-     * @param array $values
-     * @return \App\Access\Security\UserInterface[]|\Doctrine\ODM\MongoDB\Cursor
+     * Removes the user from the database
+     * @param UserInterface $user
+     * @param bool $flushNow Set to false to defer transaction (e.g. for multiple removes)
      */
-    public function findAllIn(string $field, array $values)
+    public function remove(UserInterface $user, bool $flushNow = true)
     {
-        $qb = $this->createQueryBuilder();
+        $this->dm->remove($user);
 
-        return $qb->field($field)->in($values)->getQuery()->execute();
+        if($flushNow) {
+            $this->dm->flush();
+        }
     }
 
-    /**
-     * @param int $offset
-     * @param int $limit
-     * @param string $orderBy
-     * @param bool $reverse
-     * @param array $criteria
-     * @param bool $getCountInstead
-     * @return \App\Access\Security\UserInterface[]|int int for last param if count requested
-     */
-    public function search(
-        int $offset,
-        int $limit,
-        string $orderBy = 'id',
-        bool $reverse = false,
-        array $criteria = [],
-        bool $getCountInstead = false
-    ) {
-        $qb = $this->createQueryBuilder();
-        $qb->skip($offset)->limit($limit)->sort($orderBy, $reverse ? -1 : 1);
-
-        if(isset($criteria['id'])) {
-            if(! is_string($criteria['id'])) {
-                throw new InvalidInputException('id must be a string or null');
-            }
-            $qb->field('id')->equals($criteria['id']);
-        }
-
-        if(isset($criteria['username'])) {
-            if(! is_string($criteria['username'])) {
-                throw new InvalidInputException('username must be a string or null');
-            }
-            $qb->field('username')->equals($criteria['username']);
-        }
-
-        if(isset($criteria['email'])) {
-            if(! is_string($criteria['email'])) {
-                throw new InvalidInputException('email must be a string or null');
-            }
-            $qb->field('email')->equals($criteria['email']);
-        }
-
-        if(isset($criteria['enabled'])) {
-            if(! is_bool($criteria['enabled'])) {
-                throw new InvalidInputException('enabled must be a boolean or null');
-            }
-            $qb->field('enabled')->equals($criteria['enabled']);
-        }
-
-        if(isset($criteria['roles'])) {
-            if(! is_array($criteria['roles'])) {
-                throw new InvalidInputException('roles must be an array or null');
-            }
-            $qb->field('roles')->all($criteria['roles']);
-        }
-
-        if(isset($criteria['createdAt'])) {
-            $criteria['createdAt'] = DateTimeConverter::fromISO8601Safe($criteria['createdAt']);
-            $qb->field('createdAt')->equals($criteria['createdAt']);
-        }
-
-        if(isset($criteria['updatedAt'])) {
-            $criteria['updatedAt'] = DateTimeConverter::fromISO8601Safe($criteria['updatedAt']);
-            $qb->field('updatedAt')->equals($criteria['updatedAt']);
-        }
-
-        return $getCountInstead ? $qb->getQuery()->count() : $qb->getQuery()->execute();
+    public function find($id): ?UserInterface
+    {
+        return $this->dm->createQueryBuilder($this->class)
+            ->field('id')->equals($id)
+            ->getQuery()->getSingleResult();
     }
 
-
-    /**
-     * Get new joined users orderred by createdAt
-     *
-     * @param int $offset
-     * @param int $limit
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
-     * @return \Doctrine\ODM\MongoDB\Cursor|\App\Access\Security\UserInterface[]
-     */
-    public function getNewUsers(int $offset = 0, int $limit = 20)
+    public function allCount(): int
     {
-        $qb = $this->createQueryBuilder();
-        $qb
-           ->skip($offset)
-           ->sort('createdAt', -1)
-           ->select(['_id', 'email', 'username', 'createdAt', 'country'])
-           ->limit($limit)
-        ;
-
-        /** @var \Doctrine\ODM\MongoDB\Cursor $result */
-        $result = $qb
-            ->getQuery()
-            ->execute()
-        ;
-
-        $generator = $this->getJoinedUsersIterator($result);
-
-        return iterator_to_array($generator);
+        return $this->dm->createQueryBuilder($this->class)->count()->getQuery()->execute();
     }
 }
