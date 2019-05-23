@@ -4,11 +4,11 @@ namespace App\Access\Command;
 use App\Access\Repository\UserRepository;
 use App\Access\Factory\UserFactoryInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use App\Access\Factory\UserIdentityFactoryInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class UserCommand extends Command {
@@ -48,6 +48,7 @@ class UserCommand extends Command {
             ->addArgument('identity', InputArgument::OPTIONAL, '(for create, find, delete) Identity of the user. Usually an email')
             ->addArgument('authenticity', InputArgument::OPTIONAL, '(for create) Authenticity of the user. Usually a password')
             ->addOption('id', null, InputOption::VALUE_REQUIRED, '(for find, delete) User ID. You can omit identity field when using this')
+            ->addOption('criteria', null, InputOption::VALUE_REQUIRED, '(for find) Find criteria in JSON, e.g. --criteria \'{"contacts.country":"en"}\'')
         ;
     }
 
@@ -78,7 +79,7 @@ class UserCommand extends Command {
 
         $output->writeln('Creating a user with the Identity: ' . $rawIdentity);
 
-        $user = $this->factory->create($rawIdentity, $rawAuthenticity, true);
+        $user = $this->factory->create((string)$rawIdentity, (string)$rawAuthenticity, true);
         $this->repository->save($user);
 
         $output->writeln('Done. User ID: ' . $user->getId());
@@ -88,10 +89,22 @@ class UserCommand extends Command {
     {
         $rawIdentity = $input->getArgument('identity');
         $id = $input->getOption('id');
+        $criteria = $input->getOption('criteria');
+        if($criteria) {
+            $criteria = json_decode($criteria, true);
+            if(!is_array($criteria)) {
+                throw new \Exception('Wrong criteria JSON syntax');
+            }
+        }
 
         $user = null;
+        $users = null;
 
-        if($id) {
+        if(is_array($criteria)) {
+            $output->writeln('Trying to find by criteria' . PHP_EOL);
+
+            $users = $this->repository->findBy($criteria);
+        } elseif($id) {
             $output->writeln('Trying to find by id: ' . $id . PHP_EOL);
 
             $user = $this->repository->find($id);
@@ -99,6 +112,13 @@ class UserCommand extends Command {
             $output->writeln('Trying to find by user identity: ' . $rawIdentity . PHP_EOL);
 
             $user = $this->repository->findByIdentity($this->identityFactory->create($rawIdentity));
+        }
+
+        if($users) {
+            $output->writeln('Found, total: '.count($users).PHP_EOL);
+            foreach($users as $u) {
+                $output->writeln('ID: '.$u->getId().', Identifier: '.$u->getIdentity()->getIdentifier());
+            }
         }
 
         if($user) {
