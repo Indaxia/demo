@@ -4,32 +4,18 @@ namespace App\Access\Model;
 interface UserAuthenticityInterface
 {
     /**
-     * Returns authentication data token to perform authentication comparison
-     * @return string|null
-     */
-    public function getAuthenticator(): ?string;
-
-    /**
-     * Returns authentication data encoded as a plain string
+     * @param string|null $hash Containing full hashed authentication data token
      * Example: 
      *  - 'myEncryptedPassword', 
      *  - 'myEncryptedPassword~mySalt',
      *  - 'bcrypt:myEncryptedPassword',
      *  - '{"faceRecognition": {"algorithm":"OpenBR","data":"..."}}'
-     *
-     * @return string|null
      */
-    public function getAuthenticationDataRaw(): ?string;
+    public function __construct(?string $hash);
 
     /**
-     * Returns parsed authentication data
-     * Example: 
-     *  - ['password' => 'myEncryptedPassword'], 
-     *  - ['password' => 'myEncryptedPassword', 'salt' => 'mySalt'],
-     *  - ['algorithm' => 'bcrypt', 'password' => 'myEncryptedPassword'],
-     *  - ["faceRecognition" => ["algorithm" => "OpenBR", "data" => "..."]]
-     *
-     * @return string[] 
+     * Returns authentication data token to perform authentication comparison
+     * @return string|null
      */
-    public function getAuthenticationData(): array;
+    public function getHash(): ?string;
 }

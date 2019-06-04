@@ -213,7 +213,7 @@ class User implements UserInterface
     
     public function getPassword() 
     {
-        return $this->getAuthenticity()->getAuthenticator();
+        return $this->getAuthenticity()->getHash();
     }
 
     public function getSalt()
@@ -227,7 +227,7 @@ class User implements UserInterface
     }
     
     public function eraseCredentials()
-    {        
+    {
     }
 
 }

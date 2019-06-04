@@ -3,10 +3,9 @@ namespace App\Access\Factory\UserIdentity;
 
 use App\Access\Factory\UserIdentityFactoryInterface;
 use App\Access\Exception\UserIdentityFactoryException;
-use App\Access\Document\UserIdentity;
 use App\Access\Model\UserIdentityInterface;
 
-class UserIdentityEmailFactory implements UserIdentityFactoryInterface {
+class UserIdentityEmailFactory extends GenericUserIdentityFactory implements UserIdentityFactoryInterface {
     /**
      * @param array|string|int|float $rawIdentifier
      * @return UserIdentityInterface
@@ -23,6 +22,6 @@ class UserIdentityEmailFactory implements UserIdentityFactoryInterface {
             throw new UserIdentityFactoryException('Identifier is not a valid email');
         }
 
-        return new UserIdentity(strtolower($rawIdentifier));
+        return $this->create(strtolower($rawIdentifier));
     }
 }

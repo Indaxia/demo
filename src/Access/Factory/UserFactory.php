@@ -35,6 +35,9 @@ class UserFactory implements UserFactoryInterface, ContainerAwareInterface {
         $this->authenticityFactory = $authenticityFactory;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function create(
         string $rawIdentity = null,
         string $rawAuthenticity = null,

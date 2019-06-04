@@ -1,5 +1,5 @@
 <?php
-namespace App\Access\Security\User;
+namespace App\Access\Security\Symfony;
 
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use App\Access\Model\UserInterface;
@@ -8,7 +8,7 @@ use App\Access\Factory\UserIdentityFactoryInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\User\UserInterface as SymfonyUserInterface;
 
-class Provider implements UserProviderInterface
+class UserProvider implements UserProviderInterface
 {
     /**
      * @var UserRepository

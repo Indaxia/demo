@@ -3,10 +3,10 @@ namespace App\Access\Factory\UserIdentity;
 
 use App\Access\Factory\UserIdentityFactoryInterface;
 use App\Access\Exception\UserIdentityFactoryException;
-use App\Access\Document\UserIdentity;
 use App\Access\Model\UserIdentityInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class UserIdentityUsernameFactory implements UserIdentityFactoryInterface {
+class UserIdentityUsernameFactory extends GenericUserIdentityFactory implements UserIdentityFactoryInterface {
     protected $regexp;
     protected $convertToLowercase;
 
@@ -14,8 +14,9 @@ class UserIdentityUsernameFactory implements UserIdentityFactoryInterface {
      * @param bool $convertToLowercase If false the user won't be able to login using another letter case
      * @param string $regexp
      */
-    public function __construct(bool $convertToLowercase = true, string $regexp = "/^[\w\d\-\_]{3,32}$/")
+    public function __construct(ContainerInterface $container, bool $convertToLowercase = true, string $regexp = "/^[\w\d\-\_]{3,32}$/")
     {
+        parent::__construct($container);
         $this->regexp = $regexp;
         $this->convertToLowercase = $convertToLowercase;
     }
@@ -35,6 +36,6 @@ class UserIdentityUsernameFactory implements UserIdentityFactoryInterface {
             throw new UserIdentityFactoryException('Wrong Identifier format');
         }
 
-        return new UserIdentity($this->convertToLowercase ? strtolower($rawIdentifier) : $rawIdentifier);
+        return $this->create($this->convertToLowercase ? strtolower($rawIdentifier) : $rawIdentifier);
     }
 }

@@ -1,11 +1,14 @@
 parameters:
     'app.access.user_class': 'App\Access\Document\User'
+    'app.access.user_identity_class': 'App\Access\Document\UserIdentity'
+    'app.access.user_authenticity_class': 'App\Access\Document\UserAuthenticity'
     'app.access.user_contacts_class': 'App\Access\Document\UserContacts'
     'app.access.user_settings_class': 'App\Access\Document\UserSettings'
 
 services:
+    App\Access\Factory\UserAuthenticatorInterface: '@App\Access\Security\User\Authenticator\PasswordAuthenticator'
     App\Access\Factory\UserIdentityFactoryInterface: '@App\Access\Factory\UserIdentity\UserIdentityEmailFactory'
-    App\Access\Factory\UserAuthenticityFactoryInterface: '@App\Access\Factory\UserAuthenticity\UserAuthenticityPasswordFactory'
+    App\Access\Factory\UserAuthenticityFactoryInterface: '@App\Access\Factory\UserAuthenticity\GenericUserAuthenticityFactory'
     App\Access\Security\AccessControlInterface: '@App\Access\Security\AccessControl'
     App\Access\Factory\UserFactoryInterface: '@App\Access\Factory\UserFactory'    
 

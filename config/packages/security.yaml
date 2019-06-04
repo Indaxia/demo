@@ -1,14 +1,13 @@
 security:
     encoders:
         '%app.access.user_class%':
-            algorithm: bcrypt
-            cost: 12
+            id: App\Access\Security\Symfony\PasswordEncoder
             
     role_hierarchy: {}
 
     providers:
         custom:
-            id: App\Access\Security\User\Provider
+            id: App\Access\Security\Symfony\UserProvider
 
     firewalls:
         dev:

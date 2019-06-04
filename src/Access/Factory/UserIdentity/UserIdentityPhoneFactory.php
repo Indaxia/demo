@@ -3,10 +3,10 @@ namespace App\Access\Factory\UserIdentity;
 
 use App\Access\Factory\UserIdentityFactoryInterface;
 use App\Access\Exception\UserIdentityFactoryException;
-use App\Access\Document\UserIdentity;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use App\Access\Model\UserIdentityInterface;
 
-class UserIdentityPhoneFactory implements UserIdentityFactoryInterface {
+class UserIdentityPhoneFactory extends GenericUserIdentityFactory implements UserIdentityFactoryInterface {
     protected $regexp;
     protected $filterRegexp;
 
@@ -15,9 +15,11 @@ class UserIdentityPhoneFactory implements UserIdentityFactoryInterface {
      * @param string $regexp
      */
     public function __construct(
+        ContainerInterface $container,
         string $regexp = "/^(?!(?:\d*-){5,})(?!(?:\d* ){5,})\+?[\d- ]+$/",
         string $filterRegexp = '/\s+/'
     ) {
+        parent::__construct($container);
         $this->regexp = $regexp;
         $this->filterRegexp = $filterRegexp;
     }
@@ -37,6 +39,6 @@ class UserIdentityPhoneFactory implements UserIdentityFactoryInterface {
             throw new UserIdentityFactoryException('Wrong Identifier format');
         }
 
-        return new UserIdentity(preg_replace($this->filterRegexp, '', $rawIdentifier));
+        return $this->create(preg_replace($this->filterRegexp, '', $rawIdentifier));
     }
 }
