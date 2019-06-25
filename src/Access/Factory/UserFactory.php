@@ -12,7 +12,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
-class UserFactory implements UserFactoryInterface, ContainerAwareInterface {
+class UserFactory implements UserFactoryInterface, ContainerAwareInterface 
+{
     use ContainerAwareTrait;
 
     /**
@@ -40,8 +41,7 @@ class UserFactory implements UserFactoryInterface, ContainerAwareInterface {
      */
     public function create(
         string $rawIdentity = null,
-        string $rawAuthenticity = null,
-        bool $initiallyVerified = false
+        string $rawAuthenticity = null
     ): UserInterface {
         $userClass = $this->container->getParameter('app.access.user_class');
         $userContactsClass = $this->container->getParameter('app.access.user_contacts_class');
@@ -54,8 +54,6 @@ class UserFactory implements UserFactoryInterface, ContainerAwareInterface {
         if(! ($user instanceof UserInterface)) {
             throw new UserFactoryException('Class "' . $userClass . '" is not an instance of UserInterface');
         }
-
-        $user->getVerificationState()->setVerified($initiallyVerified);
 
         if($rawIdentity) {
             $user->setIdentity($this->identityFactory->create($rawIdentity));

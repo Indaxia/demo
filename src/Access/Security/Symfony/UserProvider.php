@@ -13,7 +13,7 @@ class UserProvider implements UserProviderInterface
     /**
      * @var UserRepository
      */
-    protected $repository;
+    protected $repository; 
 
     /**
      * @var UserIdentityFactoryInterface

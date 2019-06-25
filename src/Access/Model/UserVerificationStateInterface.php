@@ -1,48 +1,36 @@
 <?php
 namespace App\Access\Model;
 
+use App\Access\Security\User\VerificationState\FactorInterface;
+use App\Access\Exception\VerificationFactorException;
+use App\Access\Exception\VerificationStateException;
+
 interface UserVerificationStateInterface
 {
     /**
      * Provides overall verification state.
      * The ability to perform authentication depends on this state.
      *
-     * @return bool
+     * @throws VerificationFactorException On verification error
+     * @throws VerificationStateException On system problem in verification process
      */
-    public function isVerified(): bool;
-
-    /**
-     * Set overall verification state. It affects authentication mechanics.
-     * @see \App\Access\Security\AccessControlInterface
-     *
-     * @param bool $value
-     * @return UserVerificationStateInterface
-     */
-    public function setVerified(bool $value): UserVerificationStateInterface;
+    public function verify(UserInterface $user);
 
     /**
      * Returns identification or authentication factor data. Returns null for non-existing records.
-     * Examples:
-     *  - the $id can be "email" and the value is true that means the email is verified
-     *  - the $id can be "phone" and the value is ['number' => '+123456789', 'code' => 123456] 
-     *    that means it awaits for the SMS with the code
      *
-     * @param string $id
-     * @return array|bool|string|int|float|null Returns null for non-existing records.
+     * @param string $class
+     * @return FactorInterface|null Returns null if not found.
+     * @throws VerificationStateException On system problem
      */
-    public function getFactor(string $id);
+    public function getFactor(string $class): ?FactorInterface;
 
     /**
-     * Sets identification or authentication factor data.
-     * Examples:
-     *  - the $id can be "email" and the value is true that means the email is verified
-     *  - the $id can be "phone" and the value is ['number' => '+123456789', 'code' => 123456] 
-     *    that means it awaits for the SMS with the code
+     * Sets identification or authentication factor data. There can be a single factor of one type at a time
      *
-     * @param string $id
-     * @param array|bool|string|int|float|null $data Specify null to remove the record
+     * @param FactorInterface $factor
      */
-    public function setFactor(string $id, $data);
+    public function setFactor(FactorInterface $factor): UserVerificationStateInterface;
 
-    public function getFactors(): array;
+    public function removeFactor(string $class): UserVerificationStateInterface;
 }

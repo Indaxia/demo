@@ -6,11 +6,11 @@ use App\Access\Exception\UserIdentityFactoryException;
 use App\Access\Exception\UserAuthenticatorException;
 use App\Access\Exception\UserFactoryException;
 
-interface UserFactoryInterface {
+interface UserFactoryInterface 
+{
     /**
      * @param string|null $rawIdentity
      * @param string|null $rawAuthenticity
-     * @param bool $initiallyVerified forwards to UserVerificationStateInterface
      * @return UserInterface
      * @throws UserIdentityFactoryException
      * @throws UserAuthenticatorException
@@ -18,7 +18,6 @@ interface UserFactoryInterface {
      */
     public function create(
         string $rawIdentity = null,
-        string $rawAuthenticity = null,
-        bool $initiallyVerified = false
+        string $rawAuthenticity = null
     ): UserInterface;
 }

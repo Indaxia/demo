@@ -10,8 +10,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use App\Access\Factory\UserIdentityFactoryInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use App\Access\Exception\VerificationFactorException;
 
-class UserCommand extends Command {
+class UserCommand extends Command 
+{
     /**
      * @var UserRepository
      */
@@ -126,17 +128,14 @@ class UserCommand extends Command {
             $output->writeln('  ID: '.$user->getId());
             $output->writeln('  Identifier: '.$user->getIdentity()->getIdentifier());
 
-            $output->writeln('  Verification State: ');
-            $output->writeln('    Verified: ' . ($user->getVerificationState()->isVerified() ? 'yes' : 'no'));
-            $factors = $user->getVerificationState()->getFactors();
-            if($factors) {
-                $output->writeln('    Factors: ');
-                foreach($factors as $factorId => $factor) {
-                    $output->writeln('      ' . $factorId . ': ' . json_encode($factor));
-                }
-            } else {
-                $output->writeln('    Factors: (no factors)');
+
+            $verification = 'verified';
+            try {
+                $user->getVerificationState()->verify($user);
+            } catch(VerificationFactorException $e) {
+                $verification = $e->getMessage();
             }
+            $output->writeln('  Verification: ' . $verification);
 
             $output->writeln('  Contacts: ');
             $contacts = $user->getContacts();

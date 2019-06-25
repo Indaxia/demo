@@ -9,6 +9,7 @@ use App\Access\Exception\AccessControlException;
 use App\Access\Exception\AccessControlUserNotFoundException;
 use App\Access\Exception\AccessControlUserDisabledException;
 use App\Access\Exception\AccessControlNotVerifiedException;
+use App\Access\Exception\VerificationFactorException;
 
 /**
  * Provides Access Control and Authorization mechanics
@@ -40,7 +41,7 @@ class AccessControl implements AccessControlInterface, ContainerAwareInterface {
      * Checks authenticated user's access and returns authorized user. If access denied throws an exception.
      * @param string|array $roles Roles. Passes if the user has at least one role. Set to [] to skip role check
      * @param bool $checkBan Set to false to skip UserInterface::getBannedAt check
-     * @param bool $checkVerificationState Set to false to skip UserVerificationStateInterface::isVerified check
+     * @param bool $checkVerificationState Set to false to skip UserVerificationStateInterface::verify check
      * @param bool $checkFullRoleSubset Set to true to pass if the user has all the specified $roles only
      * @param \App\Access\Model\UserInterface|null $checkAnotherUser Set to null to use current session user
      * @return \App\Access\Model\UserInterface Authorized user
@@ -64,7 +65,7 @@ class AccessControl implements AccessControlInterface, ContainerAwareInterface {
      * @param \App\Access\Model\UserInterface|null $subject User to authorize
      * @param string|array $roles Roles. Passes if the user has at least one role. Set to [] to skip role check
      * @param bool $checkBan Set to false to skip UserInterface::getBannedAt check
-     * @param bool $checkVerificationState Set to false to skip UserVerificationStateInterface::isVerified check
+     * @param bool $checkVerificationState Set to false to skip UserVerificationStateInterface::verify check
      * @param bool $checkFullRoleSubset Set to true to pass if the user has all the specified $roles only
      * @return \App\Access\Model\UserInterface Authorized user
      * @throws \App\Access\Exception\AccessControlException Containing the valid HTTP status code
@@ -86,7 +87,7 @@ class AccessControl implements AccessControlInterface, ContainerAwareInterface {
      * @param \App\Access\Model\UserInterface $subject
      * @param string|array $roles Roles. Passes if the user has at least one role. Set to [] to skip role check
      * @param bool $checkBan Set to false to skip UserInterface::getBannedAt check
-     * @param bool $checkVerificationState Set to false to skip UserVerificationStateInterface::isVerified check
+     * @param bool $checkVerificationState Set to false to skip UserVerificationStateInterface::verify check
      * @param bool $checkFullRoleSubset Set to true to pass if the user has all the specified $roles only
      * @return \App\Access\Model\UserInterface Authorized user
      * @throws \App\Access\Exception\AccessControlException
@@ -108,8 +109,12 @@ class AccessControl implements AccessControlInterface, ContainerAwareInterface {
             throw new AccessControlUserDisabledException(403,  $text . ($reason ? '. Reason: '.$reason : ''));
         }
 
-        if($checkVerificationState && !$subject->getVerificationState()->isVerified()) {
-            throw new AccessControlNotVerifiedException(403, 'Not verified');
+        if($checkVerificationState) {
+            try {
+                $subject->getVerificationState()->verify($subject);
+            } catch(VerificationFactorException $e) {
+                throw new AccessControlNotVerifiedException(403, 'Not verified: ' . $e->getMessage(), $e);
+            }
         }
         if (empty($roles) || ($checkFullRoleSubset ? $subject->hasAllRoles($roles) : $subject->hasAnyRole($roles))) {
             return $subject;

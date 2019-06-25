@@ -2,9 +2,7 @@
     
 namespace App\Common\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Common\Services\InitialData\Collector;
 
 class InitialController extends AbstractController
@@ -42,6 +40,6 @@ class InitialController extends AbstractController
      */
     public function initial()
     {
-        return new JsonResponse($this->collector->collect()->getData());
+        return $this->response($this->collector->collect()->getData());
     }
 }
