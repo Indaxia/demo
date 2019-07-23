@@ -22,16 +22,16 @@ class Collector implements CollectorInterface
     }
 
     /**
-     * Adds data to the Collector. Merges data withe the previous when emitted multiple times.
+     * Adds data to the Collector. Merges data with the previous when emitted multiple times.
      * The data must be transformed to the primitive or array of primitives.
      */
     public function addData(string $dataDomain, array $data)
     {
         if(empty($dataDomain)) {
-            throw new CollectorException('CollectEvent::dataKey cannot be empty');
+            throw new CollectorException('$dataDomain cannot be empty');
         }
         if(isset($this->data[$dataDomain])) {
-            $this->data[$dataDomain] = array_merge($this->data[$dataDomain], $data);
+            $this->data[$dataDomain] = array_merge_recursive($this->data[$dataDomain], $data);
         } else {
             $this->data[$dataDomain] = $data;
         }

@@ -10,6 +10,7 @@
     export default {
         mounted() {
             this.$root.$pageMetaSetTitle('Home Page');
+            this.$root.$data.hideHeadbar = true;
         }
     }
 </script>

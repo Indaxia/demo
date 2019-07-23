@@ -1,5 +1,5 @@
-import EventManager, { ServiceEvent } from '../../services/Common/EventManager'
 import axios, { AxiosPromise } from 'axios'
+import EventManager, { ServiceEvent } from '../services/EventManager' 
 
 class Instance {
     constructor() {

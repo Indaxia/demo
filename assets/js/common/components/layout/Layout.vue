@@ -1,7 +1,7 @@
 <template>
-  <div class="layout-container">
-    <md-app>
-      <md-app-toolbar class="md-primary">
+  <div class="layout-container">    
+    <md-app>      
+      <md-app-toolbar class="md-primary headbar" v-if="!$root.$data.hideHeadbar && !initializing">
         <md-button class="md-icon-button menu-open-button" aria-label="Open Menu" @click="toggleMenu" v-if="!menuVisible">
           <md-icon>more_vert</md-icon>
         </md-button>
@@ -26,28 +26,43 @@
             <span class="md-list-item-text">Home</span>
           </md-list-item>
 
-          <md-list-item :to="{name: 'some-page'}">
-            <md-icon>send</md-icon>
-            <span class="md-list-item-text">Some Page</span>
+          <md-divider class="md-inset"></md-divider>
+
+          <md-list-item :to="{name: 'login'}">
+            <md-icon>input</md-icon>
+            <span class="md-list-item-text">Sign In</span>
           </md-list-item>
         </md-list>
       </md-app-drawer>
 
-      <md-app-content role="main">
-        <router-view v-if="!initializing"></router-view>
-        <div class="loading-message" role="img" v-if="initializing" aria-label="Loading...">
-            <md-icon class="md-size-5x spin-slow">autorenew</md-icon>
+      <md-app-content role="main" class="md-layout">
+        <md-button class="md-icon-button 
+                          menu-open-button 
+                          menu-open-button-floating 
+                          md-raised 
+                          md-primary" 
+                    aria-label="Open Menu" 
+                    @click="toggleMenu" 
+                    v-if="$root.$data.hideHeadbar && !menuVisible">
+          <md-icon>more_vert</md-icon>
+        </md-button>
+
+        <router-view v-if="!initializing" class="md-layout-item md-size-100 md-large-size-80 md-xlarge-size-60"></router-view>
+        <div class="loading-message md-layout-item md-size-100 md-large-size-80 md-xlarge-size-60" role="img" v-if="initializing" aria-label="Loading...">
+            <md-icon class="md-size-5x spin-slow" v-html="'autorenew'"></md-icon>
         </div>
       </md-app-content>
     </md-app>
   </div>
 </template>
 
-<script>    
+<script>
     export default {
-      data: () => ({
-        menuVisible: false
-      }),
+      data() {
+        return {
+          menuVisible: false
+        }
+      },
       props: {
         initializing: Boolean
       },
@@ -61,8 +76,9 @@
       },
       mounted() {
         this.$router.afterEach((to, from) => {
+          this.$root.$data.hideHeadbar = false;
           this.closeMenu();
-        })
+        });
       }
     }
 </script>
@@ -79,6 +95,12 @@
     .md-app-drawer {
       max-width: 280px;
     }
+  }
+
+  .menu-open-button-floating {
+    position: fixed;
+    bottom: 12px;
+    left: 6px;
   }
 
   .loading-message {

@@ -6,7 +6,7 @@ use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class ControllerActionSubscriber
+class ControllerActionSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents()
     {

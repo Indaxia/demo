@@ -1,6 +1,6 @@
 <template>
     <div class="app-container">
-        <Layout v-if="!globalError" :initializing="initializing"></Layout>
+        <Layout v-if="!globalError" :initializing="initializing" :hide-headbar="$root.$data.hideHeadbar"></Layout>
         <md-dialog-confirm :md-active="globalErrorDialog" 
                            md-title="Global Error" 
                            :md-content="globalError" 
@@ -13,8 +13,9 @@
 </template>
 
 <script>
-    import Layout from './Common/Layout/Layout.vue'
-    import InitialDataStore from '../store/Common/InitialDataStore'
+    import Layout from './common/components/layout/Layout.vue'
+    import InitialDataStore from './common/store/InitialDataStore' 
+    import HttpSecurity from './access/services/HttpSecurity'
     
     export default {
         data() {
@@ -24,10 +25,12 @@
                 globalErrorDialog: false
             }
         },
-        components: { Layout },
+        components: { Layout }, 
         mounted() {
             this.$root.$pageMetaSetBrand("Demo App");
             this.$root.$data.env = '';
+            this.$root.$data.hideHeadbar = false;
+
             this.initialize();
         },
         methods: {

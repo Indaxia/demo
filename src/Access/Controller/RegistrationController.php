@@ -6,9 +6,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use App\Access\Factory\UserFactoryInterface;
+use App\Common\Helper\FormTransformer;
 
 /**
- * @Route("/access/registration")
+ * @Route("/api/access/registration")
  */
 class RegistrationController extends AbstractController 
 {
@@ -31,15 +32,16 @@ class RegistrationController extends AbstractController
     public function register(Request $request)
     {
         $form = $this->createForm($this->getParameter('app.access.input')['form_type_registration']);
-        $form->handleRequest($request);
-
+        $form->submit($request->request->all());
+        
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $user = $this->userFactory->create($data['identity'], $data['authenticity']);
 
             // TODO
+            return $this->response($data);
         }
-
-        return $this->response(['errors' => $this->getFormErrors($form)], 409);
+        
+        return $this->response(['errors' => (new FormTransformer($form))->getFirstError()], 409);
     }
 }

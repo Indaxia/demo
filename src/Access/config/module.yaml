@@ -5,9 +5,11 @@ parameters:
     'app.access.user_contacts_class': 'App\Access\Document\UserContacts'
     'app.access.user_settings_class': 'App\Access\Document\UserSettings'
     'app.access.input':
-        'form_type_registration': 'App\Access\Form\Type\FullNameEmailPasswordPasswordType'
+        'form_type_registration': 'App\Access\Form\Type\FullNameEmailPasswordPairType'
         'password_length_min': 8
         'password_length_max': 32
+        'fullname_length_min': 2
+        'fullname_length_max': 48
 
 services:
     App\Access\Factory\UserAuthenticatorInterface: '@App\Access\Security\User\Authenticator\PasswordAuthenticator'
