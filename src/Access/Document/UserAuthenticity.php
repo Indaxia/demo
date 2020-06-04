@@ -22,6 +22,6 @@ class UserAuthenticity implements UserAuthenticityInterface
 
     public function getHash(): ?string
     {
-        return $this->authenticator;
+        return $this->hash;
     }
 }
